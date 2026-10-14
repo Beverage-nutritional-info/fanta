@@ -206,7 +206,7 @@
 <script>
 (function(){
   /* ---------- data (per 300 ml can) ---------- */
-  var SUGAR = 41.1;
+  var SUGAR = 41; // label: 13.7 g/100 ml × 300 ml = 41.1 g, shown rounded
   var OTHERS = [
     {name:'Other<br>carbs', short:'other carbs', g:0.9,  color:'linear-gradient(#ffe066,#ffb000)'},
     {name:'Sodium',          short:'sodium',      g:0.067,color:'linear-gradient(#7af7c5,#13c48a)'},
@@ -438,6 +438,7 @@
 
   /* ---------- results chart ---------- */
   var timers=[];
+  function n1(x){ return String(Math.round(x*10)/10); }
   function fmt(g){ return g===0?'0 g':(g<0.1?(g*1000).toFixed(0)+' mg':(g%1?g.toFixed(1):g)+' g'); }
 
   function showResult(guess){
@@ -447,9 +448,9 @@
     $('banner').classList.remove('show');
 
     var diff=guess-SUGAR, ad=Math.abs(diff), msg;
-    if(ad<=3) msg='Great guess! You were within '+Math.max(ad,0.1).toFixed(1)+' g of the real amount.';
-    else if(diff<0) msg='You guessed '+guess+' g, but there is '+ad.toFixed(1)+' g more sugar than that.';
-    else msg='You guessed '+guess+' g, which is '+ad.toFixed(1)+' g more than the real amount.';
+    if(ad<=3) msg='Great guess! You were within '+n1(Math.max(ad,0.1))+' g of the real amount.';
+    else if(diff<0) msg='You guessed '+guess+' g, but there is '+n1(ad)+' g more sugar than that.';
+    else msg='You guessed '+guess+' g, which is '+n1(ad)+' g more than the real amount.';
     $('verdict').textContent=msg;
 
     var items=[{name:'Your<br>guess',g:guess,color:'linear-gradient(#b48cff,#7b2ff7)'},
