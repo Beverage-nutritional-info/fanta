@@ -30,7 +30,7 @@
   .bubbles{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
   .bubbles span{position:absolute;bottom:-60px;border-radius:50%;
     background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.9),rgba(255,255,255,.15) 60%,rgba(255,255,255,0) 70%);
-    animation:rise linear infinite;opacity:.7}
+    animation:rise linear infinite;opacity:.7;will-change:transform}
   @keyframes rise{to{transform:translateY(-115vh) translateX(20px)}}
 
   #scene{position:fixed;inset:0;width:100%;height:100%;z-index:1;display:block;transform:translateZ(0)}
@@ -38,7 +38,6 @@
   #flash.on{opacity:1}
   #flash.out{transition:opacity .7s ease-out}
   body.intro{animation-play-state:paused}
-  body.intro .bubbles{display:none}
 
   .screen{
     position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;
