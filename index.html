@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#ff6a00">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8D%8A%3C/text%3E%3C/svg%3E">
 <title>Fanta: Nutritional Info</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +15,8 @@
     --ink:#2b1050; --card:#fffdf8;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
+  input{-webkit-user-select:text;user-select:text}
   html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
   body{
     font-family:'Fredoka',system-ui,sans-serif;color:#fff;
@@ -77,6 +80,7 @@
        font-size:clamp(17px,4.8vw,20px);color:#fff;padding:14px 30px;border-radius:999px;
        background:linear-gradient(90deg,var(--purple),var(--blue));
        box-shadow:0 6px 0 #4b1a9c,0 12px 24px rgba(0,0,0,.25);transition:transform .1s,box-shadow .1s;flex-shrink:0}
+  .btn:disabled{opacity:.55;filter:grayscale(.3)}
   .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #4b1a9c,0 6px 12px rgba(0,0,0,.25)}
   .btn.alt{background:linear-gradient(90deg,var(--orange),var(--pink));box-shadow:0 6px 0 #b8325a,0 12px 24px rgba(0,0,0,.25)}
 
@@ -118,8 +122,7 @@
           opacity:0;transform:translateY(16px);transition:all .6s;flex-shrink:0}
   #banner.show{opacity:1;transform:none}
   #banner b{color:#e8480c}
-  #replay{opacity:0;transition:opacity .5s;margin-top:12px}
-  #replay.show{opacity:1}
+  #banner .who{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed #e6d6f0;font-weight:500;font-size:.92em;color:#5b4373}
   .src{font-size:11px;opacity:.75;margin-top:8px;text-align:center;flex-shrink:0}
 </style>
 </head>
@@ -133,7 +136,6 @@
     <h1>Fanta: Nutritional Info</h1>
     <p class="sub">What's really inside your can?</p>
   </div>
-  <div class="bottom" id="capText">Spinning the can… 🍊</div>
 </section>
 
 <!-- Nutrition label (sugar hidden) -->
@@ -168,7 +170,7 @@
     <div class="spoons" id="spoons"></div>
     <p class="hint">Tip: 1 teaspoon of sugar ≈ 4 g</p>
     <p class="err" id="err">Please enter a number between 0 and 300</p>
-    <button class="btn alt" type="button" id="revealBtn">Reveal the answer!</button>
+    <button class="btn alt" type="button" id="revealBtn" disabled>Reveal the answer</button>
   </div>
 </section>
 
@@ -182,8 +184,7 @@
     <div class="labels" id="labels"></div>
   </div>
   <div id="banner"></div>
-  <button class="btn" id="replay">↻ Play again</button>
-  <p class="src">Data: Fanta Orange 300 ml can (India) label, via Open Food Facts</p>
+  <p class="src">Sources: Fanta Orange 300 ml can label (India), via Open Food Facts · WHO sugar intake guideline</p>
 </section>
 
 <script>/* three.js r128, MIT License */
@@ -363,15 +364,15 @@
         phase='turn'; t0=now; turnFrom=rotY;
         var twoPi=Math.PI*2, target=Math.ceil((rotY-Math.PI)/twoPi)*twoPi+Math.PI;
         if(target-rotY<1.2) target+=twoPi;
-        turnTo=target; $('capText').textContent='Turning to the nutrition column… 🔍';
+        turnTo=target;
       }
     }else if(phase==='turn'){
-      var p=Math.min(t/1600,1), e=1-Math.pow(1-p,3);
+      var p=Math.min(t/1100,1), e=1-Math.pow(1-p,3);
       can.rotation.y=turnFrom+(turnTo-turnFrom)*e;
       can.rotation.x=tiltFrom*(1-e); can.position.y*=0.9;
-      if(p>=1){ phase='zoom'; t0=now; zoomFrom=camera.position.z; zoomTo=panelZ(); $('capText').style.opacity=0; }
+      if(p>=1){ phase='zoom'; t0=now; zoomFrom=camera.position.z; zoomTo=panelZ(); }
     }else if(phase==='zoom'){
-      var q=Math.min(t/1800,1), f=ease(q);
+      var q=Math.min(t/800,1), f=ease(q);
       camera.position.z=zoomFrom+(zoomTo-zoomFrom)*f;
       if(q>=1){
         phase='done'; running=false;
@@ -384,7 +385,7 @@
   }
 
   function startIntro(){
-    show('caption'); $('capText').style.opacity=1; $('capText').textContent='Spinning the can… 🍊';
+    show('caption');
     if(!renderer){ setTimeout(function(){show('info');},1500); return; }
     phase='spin'; rotY=0; can.rotation.set(0,0,0); can.position.y=0;
     camera.position.set(0,0,baseZ());
@@ -397,7 +398,8 @@
   $('toGuess').addEventListener('click',function(){
     running=false; canvas.style.opacity=0;
     show('guess'); input.value=''; $('spoons').textContent=''; $('err').style.display='none';
-    setTimeout(function(){ input.focus(); },450);
+    $('revealBtn').disabled=true;
+    try{ input.focus({preventScroll:true}); }catch(e){ input.focus(); }
   });
   input.addEventListener('input',function(){
     var clean=input.value.replace(',','.').replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1');
@@ -406,6 +408,7 @@
     var n=isNaN(v)?0:Math.min(Math.round(v/4),15);
     $('spoons').textContent=n?'🥄'.repeat(n)+(v/4>15?'…':''):'';
     $('err').style.display='none';
+    $('revealBtn').disabled=!(clean.length&&!isNaN(v));
   });
   function reveal(ev){
     if(ev) ev.preventDefault();
@@ -425,12 +428,12 @@
     timers.forEach(clearTimeout); timers=[];
     var bars=$('bars'), labels=$('labels');
     bars.innerHTML=''; labels.innerHTML='';
-    $('banner').classList.remove('show'); $('replay').classList.remove('show');
+    $('banner').classList.remove('show');
 
     var diff=guess-SUGAR, ad=Math.abs(diff), msg;
-    if(ad<=3) msg='🎯 Amazing! You were almost spot on.';
-    else if(diff<0) msg='😮 Off by '+ad.toFixed(1)+' g — there is MORE sugar than you thought!';
-    else msg='🤔 You over-guessed by '+ad.toFixed(1)+' g — but it\'s still a lot of sugar!';
+    if(ad<=3) msg='Great guess! You were within '+Math.max(ad,0.1).toFixed(1)+' g of the real amount.';
+    else if(diff<0) msg='You guessed '+guess+' g, but there is '+ad.toFixed(1)+' g more sugar than that.';
+    else msg='You guessed '+guess+' g, which is '+ad.toFixed(1)+' g more than the real amount.';
     $('verdict').textContent=msg;
 
     var items=[{name:'Your<br>guess',g:guess,color:'linear-gradient(#b48cff,#7b2ff7)'},
@@ -462,14 +465,14 @@
       var tsp=Math.round(SUGAR/4);
       var b=$('banner');
       var biggest=OTHERS.every(function(o){return SUGAR>o.g;});
-      b.innerHTML=biggest
-        ? 'Sugar is the <b>highest nutrient</b> in the can — about <b>'+tsp+' teaspoons</b>, and '+Math.round(SUGAR/rest)+'× more than all the others combined!'
-        : 'One can has about <b>'+tsp+' teaspoons</b> of sugar.';
-      b.classList.add('show'); $('replay').classList.add('show');
+      b.innerHTML=(biggest
+        ? 'Sugar is the <b>highest nutrient</b> in the can: about <b>'+tsp+' teaspoons</b>, '+Math.round(SUGAR/rest)+'× more than all the others combined.'
+        : 'One can has about <b>'+tsp+' teaspoons</b> of sugar.')
+        + '<span class="who">That is <b>'+Math.round(SUGAR/25*100)+'%</b> of the WHO\'s ideal daily limit of 25 g (6 teaspoons) of sugar.</span>';
+      b.classList.add('show');
     },end));
   }
 
-  $('replay').addEventListener('click',function(){ timers.forEach(clearTimeout); startIntro(); });
 
   /* ---------- boot ---------- */
   function boot(){ init3D(); startIntro(); }
