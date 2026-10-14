@@ -454,7 +454,8 @@
     $('banner').classList.remove('show');
 
     var diff=guess-SUGAR, ad=Math.abs(diff), msg;
-    if(ad<=3) msg='Great guess! You were within '+n1(Math.max(ad,0.1))+' g of the real amount.';
+    if(ad===0) msg='Spot on! That\'s exactly right: one can has '+SUGAR+' g of sugar.';
+    else if(ad<=3) msg='So close! You were just '+n1(ad)+' g away from the real amount.';
     else if(diff<0) msg='You guessed '+guess+' g, but there is '+n1(ad)+' g more sugar than that.';
     else msg='You guessed '+guess+' g, which is '+n1(ad)+' g more than the real amount.';
     $('verdict').textContent=msg;
